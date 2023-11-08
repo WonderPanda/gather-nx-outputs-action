@@ -11102,18 +11102,24 @@ const promises_1 = __nccwpck_require__(3292);
 async function run() {
     try {
         const projectJsonFiles = await (0, globby_1.default)('**/project.json');
-        core.debug(`PROJECT JSON FILES: ${projectJsonFiles}`);
         const target = core.getInput('target');
-        const codegenOutputs = await Promise.all(projectJsonFiles.map(async (projectJson) => {
+        core.debug(`Found ${projectJsonFiles.length} project.json files which will be searched for a target named ${target}`);
+        const allTargetOutputs = await Promise.all(projectJsonFiles.map(async (projectJson) => {
+            core.debug(`Reading ${projectJson}`);
             const rawContents = await (0, promises_1.readFile)(projectJson, 'utf-8');
             const json = JSON.parse(rawContents);
-            const codegenOutputs = json?.targets?.[target]?.outputs;
-            return (codegenOutputs ?? []);
+            core.debug(`JSON for ${projectJson}: ${JSON.stringify(json)}`);
+            const targetOutputs = json?.targets?.[target]?.outputs;
+            if (targetOutputs) {
+                core.debug(`Outputs for ${target} found in file ${projectJson}: ${targetOutputs}`);
+            }
+            return (targetOutputs ?? []);
         }));
-        const paths = codegenOutputs
+        const paths = allTargetOutputs
             .flat()
             .map(p => p.replace('{workspaceRoot}/', ''))
             .join('\n');
+        core.debug(`OUTPUT PATHS: ${paths}`);
         core.setOutput('paths', paths);
     }
     catch (error) {
