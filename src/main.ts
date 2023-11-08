@@ -9,26 +9,29 @@ export async function run(): Promise<void> {
 
     const target = core.getInput('target')
 
-    const targetOutputs = await Promise.all(
+    const allTargetOutputs = await Promise.all(
       projectJsonFiles.map(async projectJson => {
         const rawContents = await readFile(projectJson, 'utf-8')
         const json = JSON.parse(rawContents)
-        const codegenOutputs = json?.targets?.[target]?.outputs
+        core.debug(`JSON for ${projectJson}: ${JSON.stringify(json)}`)
+        const targetOutputs = json?.targets?.[target]?.outputs
 
-        if (codegenOutputs) {
+        if (targetOutputs) {
           core.debug(
-            `Outputs for ${target} found in file ${projectJson}: ${codegenOutputs}`
+            `Outputs for ${target} found in file ${projectJson}: ${targetOutputs}`
           )
         }
 
-        return (codegenOutputs ?? []) as string[]
+        return (targetOutputs ?? []) as string[]
       })
     )
 
-    const paths = targetOutputs
+    const paths = allTargetOutputs
       .flat()
       .map(p => p.replace('{workspaceRoot}/', ''))
       .join('\n')
+
+    core.debug(`OUTPUT PATHS: ${paths}`)
 
     core.setOutput('paths', paths)
   } catch (error) {
