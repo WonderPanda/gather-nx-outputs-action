@@ -5,6 +5,7 @@ import { readFile } from 'fs/promises'
 export async function run(): Promise<void> {
   try {
     const projectJsonFiles = await globby('**/project.json')
+    core.debug(`PROJECT JSON FILES: ${projectJsonFiles}`)
 
     const target = core.getInput('target')
 
