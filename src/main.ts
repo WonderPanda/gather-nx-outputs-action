@@ -9,17 +9,23 @@ export async function run(): Promise<void> {
 
     const target = core.getInput('target')
 
-    const codegenOutputs = await Promise.all(
+    const targetOutputs = await Promise.all(
       projectJsonFiles.map(async projectJson => {
         const rawContents = await readFile(projectJson, 'utf-8')
         const json = JSON.parse(rawContents)
         const codegenOutputs = json?.targets?.[target]?.outputs
 
+        if (codegenOutputs) {
+          core.debug(
+            `Outputs for ${target} found in file ${projectJson}: ${codegenOutputs}`
+          )
+        }
+
         return (codegenOutputs ?? []) as string[]
       })
     )
 
-    const paths = codegenOutputs
+    const paths = targetOutputs
       .flat()
       .map(p => p.replace('{workspaceRoot}/', ''))
       .join('\n')
