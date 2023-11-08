@@ -1,24 +1,29 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
+import globby from 'globby'
+import { readFile } from 'fs/promises'
 
-/**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
- */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const projectJsonFiles = await globby('**/project.json')
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const target = core.getInput('target')
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const codegenOutputs = await Promise.all(
+      projectJsonFiles.map(async projectJson => {
+        const rawContents = await readFile(projectJson, 'utf-8')
+        const json = JSON.parse(rawContents)
+        const codegenOutputs = json?.targets?.[target]?.outputs
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+        return (codegenOutputs ?? []) as string[]
+      })
+    )
+
+    const paths = codegenOutputs
+      .flat()
+      .map(p => p.replace('{workspaceRoot}/', ''))
+      .join('\n')
+
+    core.setOutput('paths', paths)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
