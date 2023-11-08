@@ -11102,13 +11102,12 @@ const promises_1 = __nccwpck_require__(3292);
 async function run() {
     try {
         const projectJsonFiles = await (0, globby_1.default)('**/project.json');
-        const target = core.getInput('target');
+        const target = core.getInput('target') || 'codegen';
         core.debug(`Found ${projectJsonFiles.length} project.json files which will be searched for a target named ${target}`);
         const allTargetOutputs = await Promise.all(projectJsonFiles.map(async (projectJson) => {
-            core.debug(`Reading ${projectJson}`);
             const rawContents = await (0, promises_1.readFile)(projectJson, 'utf-8');
             const json = JSON.parse(rawContents);
-            core.debug(`JSON for ${projectJson}: ${JSON.stringify(json)}`);
+            core.debug(`Reading ${projectJson}. Found targets: ${Object.keys(json.targets)}}`);
             const targetOutputs = json?.targets?.[target]?.outputs;
             if (targetOutputs) {
                 core.debug(`Outputs for ${target} found in file ${projectJson}: ${targetOutputs}`);

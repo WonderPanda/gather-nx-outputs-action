@@ -6,7 +6,7 @@ export async function run(): Promise<void> {
   try {
     const projectJsonFiles = await globby('**/project.json')
 
-    const target = core.getInput('target')
+    const target = core.getInput('target') || 'codegen'
 
     core.debug(
       `Found ${projectJsonFiles.length} project.json files which will be searched for a target named ${target}`
@@ -14,10 +14,12 @@ export async function run(): Promise<void> {
 
     const allTargetOutputs = await Promise.all(
       projectJsonFiles.map(async projectJson => {
-        core.debug(`Reading ${projectJson}`)
         const rawContents = await readFile(projectJson, 'utf-8')
         const json = JSON.parse(rawContents)
-        core.debug(`JSON for ${projectJson}: ${JSON.stringify(json)}`)
+        core.debug(
+          `Reading ${projectJson}. Found targets: ${Object.keys(json.targets)}}`
+        )
+
         const targetOutputs = json?.targets?.[target]?.outputs
 
         if (targetOutputs) {
