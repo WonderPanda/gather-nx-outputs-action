@@ -9,8 +9,13 @@ export async function run(): Promise<void> {
 
     const target = core.getInput('target')
 
+    core.debug(
+      `Found ${projectJsonFiles.length} project.json files which will be searched for a target named ${target}`
+    )
+
     const allTargetOutputs = await Promise.all(
       projectJsonFiles.map(async projectJson => {
+        core.debug(`Reading ${projectJson}`)
         const rawContents = await readFile(projectJson, 'utf-8')
         const json = JSON.parse(rawContents)
         core.debug(`JSON for ${projectJson}: ${JSON.stringify(json)}`)
