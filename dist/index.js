@@ -11107,7 +11107,7 @@ async function run() {
         const allTargetOutputs = await Promise.all(projectJsonFiles.map(async (projectJson) => {
             const rawContents = await (0, promises_1.readFile)(projectJson, 'utf-8');
             const json = JSON.parse(rawContents);
-            core.debug(`Reading ${projectJson}. Found targets: ${Object.keys(json.targets)}}`);
+            core.debug(`Reading ${projectJson}. Found targets: ${Object.keys(json.targets ?? {})}}`);
             const targetOutputs = json?.targets?.[target]?.outputs;
             if (targetOutputs) {
                 core.debug(`Outputs for ${target} found in file ${projectJson}: ${targetOutputs}`);

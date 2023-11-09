@@ -17,7 +17,9 @@ export async function run(): Promise<void> {
         const rawContents = await readFile(projectJson, 'utf-8')
         const json = JSON.parse(rawContents)
         core.debug(
-          `Reading ${projectJson}. Found targets: ${Object.keys(json.targets)}}`
+          `Reading ${projectJson}. Found targets: ${Object.keys(
+            json.targets ?? {}
+          )}}`
         )
 
         const targetOutputs = json?.targets?.[target]?.outputs
